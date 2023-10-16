@@ -51,10 +51,6 @@ int ZEXPORT compress2 (dest, destLen, source, sourceLen, level)
             stream.avail_out = left > (uLong)max ? max : (uInt)left;
             left -= stream.avail_out;
         }
-        if (stream.avail_in == 0) {
-            stream.avail_in = sourceLen > (uLong)max ? max : (uInt)sourceLen;
-            sourceLen -= stream.avail_in;
-        }
         err = deflate(&stream, sourceLen ? Z_NO_FLUSH : Z_FINISH);
     } while (err == Z_OK);
 
