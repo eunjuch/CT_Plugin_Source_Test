@@ -1,0 +1,6 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+    <f:entry title="${%ct_command_title}" field="command" description="${%ct_command_description}">
+		<f:textarea></f:textarea>
+	</f:entry>
+</j:jelly>

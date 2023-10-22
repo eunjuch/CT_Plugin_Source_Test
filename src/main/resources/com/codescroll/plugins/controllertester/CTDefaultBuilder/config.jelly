@@ -1,0 +1,51 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
+	
+	<f:entry title="Project" field="repoOption">
+		<f:radio name="repoOption" title="Project from Local Repository" value="localRepo" checked="${instance.repoOption == 'localRepo'}">
+		    <f:nested>
+		    	<f:entry title="Project Path" field="localProjectPath">
+					<f:textbox></f:textbox>
+				</f:entry>
+		    </f:nested>
+	    </f:radio>
+		<f:radio name="repoOption" title="Project from Git Repository" value="gitRepo" checked="${instance.repoOption == 'gitRepo'}">
+		    <f:nested>
+		    	<f:entry title="Git Project Path" field="gitProjectPath">
+					<f:textbox></f:textbox>
+				</f:entry>
+				<f:entry title="Branch" field="gitProjectBranch">
+					<f:textbox></f:textbox>
+				</f:entry>
+				<f:entry title="Project Root" field="gitProjectRootPath">
+					<f:textbox></f:textbox>
+				</f:entry>
+				<f:entry field="credentialsId" title="${%Credentials}">
+					<c:select includeUser="true"/>
+				</f:entry>
+		    </f:nested>
+	    </f:radio>
+	</f:entry>
+	
+	<f:entry title="Source Code Root Path" field="srcRootPath">
+		<f:textbox></f:textbox>
+	</f:entry>
+	
+	<f:entry title="Execute Test on Linux (RTV Test)" field="isRtvTest">
+		<f:checkbox></f:checkbox>
+	</f:entry>
+    
+    <f:entry title="Report Format" field="reportFormat">
+		<f:radio name="reportFormat" title="HTML"
+			value="HTML" checked="${instance.reportFormat == 'HTML'}" />
+		<f:radio name="reportFormat" title="PDF"
+			value="PDF" checked="${instance.reportFormat == 'PDF'}" />
+	</f:entry>
+	
+	<f:advanced>
+		<f:entry title="Mapping File" field="mappingFilePath">
+			<f:textbox></f:textbox>
+		</f:entry>
+	</f:advanced>
+	
+</j:jelly>

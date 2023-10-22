@@ -1,0 +1,36 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+
+    <f:entry title="${%ct_path_title}" field="ctPath" description="${%ctDescription}">
+		<f:textbox default="${descriptor.globalCtPath}"/>
+	</f:entry>
+	
+	<f:entry title="${%license_properties_title}" field="licenseOption">
+		<f:radio name="licenseOption" title="Node-locked" value="nodelocked" checked="${descriptor.globalLicenseOption == 'nodelocked'}">
+		    <f:nested>
+		    	<f:entry title="License File Path" field="licenseFilePath">
+					<f:textbox default="${descriptor.globalLicenseFilePath}"></f:textbox>
+				</f:entry>
+		    </f:nested>
+	    </f:radio>
+		<f:radio name="licenseOption" title="Floating" value="floating" checked="${descriptor.globalLicenseOption == 'floating'}">
+		    <f:nested>
+		    	<f:entry title="${%server_os_title}" field="serverOs">
+					<f:radio name="serverOs" title="Window"
+						value="2" checked="${descriptor.globalServerOs == '2'}" />
+					<f:radio name="serverOs" title="Linux"
+						value="1" checked="${descriptor.globalServerOs == '1'}" />
+				</f:entry>
+		    
+		    	<f:entry title="${%server_ip_title}" field="serverIp">
+					<f:textbox default="${descriptor.globalServerIp}"/>
+				</f:entry>
+				
+				<f:entry title="${%port_title}" field="port">
+					<f:textbox default="${descriptor.globalPort}"/>
+				</f:entry>
+		    </f:nested>
+	    </f:radio>
+	</f:entry>
+	
+</j:jelly>
