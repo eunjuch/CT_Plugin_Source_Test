@@ -7,13 +7,13 @@ import com.codescroll.plugins.controllertester.util.PathProvider;
 import hudson.FilePath;
 import hudson.util.ArgumentListBuilder;
 
-public class CTSingleCommand extends CTCommand {
+public class CTGeneralCommand extends CTCommand {
 	
 	private PathProvider pathProvider;
 	private FilePath projectPath;
 	private String mappingFilePath;
 	
-	protected CTSingleCommand(PathProvider pathProvider, FilePath projectPath, String mappingFilePath) {
+	protected CTGeneralCommand(PathProvider pathProvider, FilePath projectPath, String mappingFilePath) {
 		this.pathProvider = pathProvider;
 		this.projectPath = projectPath;
 		this.mappingFilePath = mappingFilePath;
@@ -31,15 +31,20 @@ public class CTSingleCommand extends CTCommand {
 		return mappingFilePath;
 	}
 
-	@Override
-	public ArgumentListBuilder importCommand() {
+	private ArgumentListBuilder baseCommand() {
 		ArgumentListBuilder cmd = new ArgumentListBuilder(CMD_CMD_EXE, CMD_C);
 		
-		// TODO 공통부분 빼기
 		cmd.add(CMD_CSC_EXE, CMD_G);
 		cmd.addQuoted(pathProvider.getGlobalPath().getRemote());
 		cmd.add(CMD_E, CMD_W);
 		cmd.addQuoted(pathProvider.getCtWorkspacePath().getRemote());
+		
+		return cmd;
+	}
+	
+	@Override
+	public ArgumentListBuilder importCommand() {
+		ArgumentListBuilder cmd = baseCommand();
 		cmd.add(CMD_IMPORT, CMD_O);
 		
 		String pathOption = String.join(PathProvider.NO_LENGTH, PathProvider.SINGLE_QUOTE, projectPath.getRemote(),
@@ -59,14 +64,12 @@ public class CTSingleCommand extends CTCommand {
 
 	@Override
 	public ArgumentListBuilder executeCommand() throws IOException, InterruptedException {
-		ArgumentListBuilder cmd = new ArgumentListBuilder(CMD_CMD_EXE, CMD_C);
+		ArgumentListBuilder cmd = baseCommand();
 		
-		cmd.add(CMD_CSC_EXE, CMD_G);
-		cmd.addQuoted(pathProvider.getGlobalPath().getRemote());
-		cmd.add(CMD_E, CMD_W);
-		cmd.addQuoted(pathProvider.getCtWorkspacePath().getRemote());
 		cmd.add(CMD_INI, CMD_O);
 		cmd.addQuoted(String.join(PathProvider.SEPARATOR, pathProvider.getIniPath().getRemote(), PathProvider.SAMPLE_CLI_INI));
+		
+		// TODO --result-path
 		
 		return cmd;
 	}

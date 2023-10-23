@@ -9,7 +9,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import com.codescroll.plugins.controllertester.project.CTSingleProject;
+import com.codescroll.plugins.controllertester.project.CTGeneralProject;
 import com.codescroll.plugins.controllertester.project.ProjectManager;
 import com.codescroll.plugins.controllertester.util.GitInfo;
 import com.codescroll.plugins.controllertester.util.KeyConstant;
@@ -50,13 +50,14 @@ public class CTDefaultBuilder extends Builder implements SimpleBuildStep {
 	private static final String TRUE = "true";
 	private static final String FALSE = "false";
 	
-	// Repository Option
 	/**
-	 * 
+	 * Repository Option
 	 */
 	private String repoOption;
 	
-	// Project from Local
+	/**
+	 * Project from Local
+	 */
 	private String localProjectPath;
 	
 	// Project from Git
@@ -72,14 +73,15 @@ public class CTDefaultBuilder extends Builder implements SimpleBuildStep {
 	private boolean isRtvTest;
 	
 	// Report Format
-	private String reportFormat;
+	private boolean htmlReport;
+	private boolean pdfReport;
 	
 	// Advanced
 	private String mappingFilePath;
 	
 	@DataBoundConstructor
 	public CTDefaultBuilder(String repoOption, String localProjectPath, String gitProjectPath, String gitProjectBranch,
-			String gitProjectRootPath, String credentialsId, String srcRootPath, boolean isRtvTest, String reportFormat,
+			String gitProjectRootPath, String credentialsId, String srcRootPath, boolean isRtvTest, boolean htmlReport, boolean pdfReport, 
 			String mappingFilePath) {
 		this.repoOption = repoOption;
 		this.localProjectPath = localProjectPath;
@@ -89,7 +91,8 @@ public class CTDefaultBuilder extends Builder implements SimpleBuildStep {
 		this.credentialsId = credentialsId;
 		this.srcRootPath = srcRootPath;
 		this.isRtvTest = isRtvTest;
-		this.reportFormat = reportFormat;
+		this.htmlReport = htmlReport;
+		this.pdfReport = pdfReport;
 		this.mappingFilePath = mappingFilePath;
 	}
 
@@ -124,9 +127,13 @@ public class CTDefaultBuilder extends Builder implements SimpleBuildStep {
 	public boolean getRtvTest() {
 		return isRtvTest;
 	}
-
-	public String getReportFormat() {
-		return reportFormat;
+	
+	public boolean getHtmlReport() {
+		return htmlReport;
+	}
+	
+	public boolean getPdfReport() {
+		return pdfReport;
 	}
 
 	public String getMappingFilePath() {
@@ -153,10 +160,10 @@ public class CTDefaultBuilder extends Builder implements SimpleBuildStep {
 			
 		} else if (repoOption.equals(GIT_REPO)) {
 			GitInfo gitInfo = new GitInfo(gitProjectPath, gitProjectRootPath, gitProjectBranch, credentialsId);
-			resolvedPath = manager.loadProject(gitInfo, run, env, listener);
+			resolvedPath = manager.copyProject(gitInfo, run, env, listener);
 		}
 
-		CTSingleProject singleProject = new CTSingleProject(resolvedPath);
+		CTGeneralProject singleProject = new CTGeneralProject(pathProvider.getTempProjectPath());
 		
 		// 환경변수에 대입
 		env.put(KeyConstant.NAME, singleProject.getProjectName());
@@ -166,22 +173,16 @@ public class CTDefaultBuilder extends Builder implements SimpleBuildStep {
 		String replacedReportPath = reportPath.replace(PathProvider.REV_SEPARATOR, PathProvider.SEPARATOR);
 		env.put(KeyConstant.OUTPUT_DIR, replacedReportPath);
 		
-		if (reportFormat.equals(HTML_KEY)) {
-			env.put(KeyConstant.HTML, TRUE);
-			env.put(KeyConstant.PDF, FALSE);
-		} else if (reportFormat.equals(PDF_KEY)) {
-			env.put(KeyConstant.HTML, FALSE);
-			env.put(KeyConstant.PDF, TRUE);
-		}
+		env.put(KeyConstant.HTML, String.valueOf(htmlReport));
+		env.put(KeyConstant.PDF, String.valueOf(pdfReport));
 		
 		manager.writeInfo(env);
 		
 		// 커맨드 생성
-		CTSingleCommand singleProjectCommand = new CTSingleCommand(pathProvider, resolvedPath, mappingFilePath);
+		CTGeneralCommand generalProjectCommand = new CTGeneralCommand(pathProvider, resolvedPath, mappingFilePath);
 		
-		// TODO general project
 		// import
-		if (startCommand(singleProjectCommand.importCommand(), env, launcher, listener) != Result.SUCCESS.ordinal) {
+		if (startCommand(generalProjectCommand.importCommand(), env, launcher, listener) != Result.SUCCESS.ordinal) {
 			run.setResult(Result.FAILURE);
 			throw new AbortException("Import Fail");
 		}
@@ -191,7 +192,7 @@ public class CTDefaultBuilder extends Builder implements SimpleBuildStep {
 		manager.updateSourceCode(srcRootPath);
 		
 		// execute
-		if (startCommand(singleProjectCommand.executeCommand(), env, launcher, listener) != Result.SUCCESS.ordinal) {
+		if (startCommand(generalProjectCommand.executeCommand(), env, launcher, listener) != Result.SUCCESS.ordinal) {
 			run.setResult(Result.FAILURE);
 			throw new AbortException("Execution Fail");
 		}

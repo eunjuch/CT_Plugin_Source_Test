@@ -7,14 +7,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jenkinsci.plugins.gitclient.Git;
 import org.jenkinsci.plugins.gitclient.GitClient;
 
 import com.codescroll.plugins.controllertester.util.PathProvider;
-import com.codescroll.plugins.controllertester.util.ResourceInfo;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
@@ -30,6 +31,8 @@ import hudson.model.TaskListener;
 
 public class ProjectManager {
 
+	public record ResourceInfo(String resourcePath, FilePath targetPath, Map<String, String> keyValue) { }
+	
 	private static final String GIT_EXE = "git.exe";
 	private static final String ORIGIN = "origin";
 	
@@ -43,15 +46,25 @@ public class ProjectManager {
 	public void initWorkspace() {
 		
 		// ctdata, ctworkspace 폴더 삭제 (global, ini, report, 임시프로젝트 경로 포함)
-		deleteDir(pathProvider.getCtDataPath(), pathProvider.getCtWorkspacePath());
+		
+		ArrayList<FilePath> pathToDelete = new ArrayList<>();
+		pathToDelete.add(pathProvider.getCtDataPath());
+		pathToDelete.add(pathProvider.getCtWorkspacePath());
+		
+		deleteDir(pathToDelete);
+		
+		ArrayList<FilePath> pathToCreate = new ArrayList<>();
+		pathToCreate.add(pathProvider.getFloatingLicensePath());
+		pathToCreate.add(pathProvider.getIniPath());
+		pathToCreate.add(pathProvider.getReportPath());
+		pathToCreate.add(pathProvider.getTempProjectPath());
+		pathToCreate.add(pathProvider.getCtWorkspacePath());
 		
 		// ctdata, ctworkspace 생성
-		makeDir(pathProvider.getFloatingLicensePath(), pathProvider.getIniPath(), pathProvider.getReportPath(),
-				pathProvider.getTempProjectPath(), pathProvider.getCtWorkspacePath());
+		makeDir(pathToCreate);
 		
 	}
 	
-	// TODO 메소드 이름 수정
 	// 로컬에서 임시 디렉터리로 재귀복사
 	public FilePath copyProject(String localProjectPath) throws IOException, InterruptedException {
 		
@@ -63,7 +76,7 @@ public class ProjectManager {
 	}
 	
 	// git에서 임시 디렉터리로 클론
-	public FilePath loadProject(GitInfo gitInfo, Run<?, ?> run, EnvVars env, TaskListener listener) throws IOException, InterruptedException {
+	public FilePath copyProject(GitInfo gitInfo, Run<?, ?> run, EnvVars env, TaskListener listener) throws IOException, InterruptedException {
 		
 		StandardUsernameCredentials credential = CredentialsProvider.findCredentialById(
 	            gitInfo.credentialsId(),
@@ -119,9 +132,8 @@ public class ProjectManager {
 		
 	}
 	
-	// TODO 가변인자 수정
 	// 디렉토리 재귀 삭제
-	public void deleteDir(FilePath ... dirPath) {
+	public void deleteDir(List<FilePath> dirPath) {
 		
 		try {
 			for (FilePath eachDirPath : dirPath) {
@@ -137,7 +149,7 @@ public class ProjectManager {
 	}
 	
 	// 디렉토리 구조 생성
-	public void makeDir(FilePath ... dirPath) {
+	public void makeDir(List<FilePath> dirPath) {
 		
 		try {
 			for (FilePath eachDirPath : dirPath) {				
@@ -196,7 +208,7 @@ public class ProjectManager {
 		// 리소스 읽어오기
 		String resourcePath = resourceInfo.resourcePath();
 		
-		String line = "";
+		String line = PathProvider.NO_LENGTH;
 		// TODO utf-8
 		try (InputStream is = ProjectManager.class.getResourceAsStream(resourcePath)) {
 			

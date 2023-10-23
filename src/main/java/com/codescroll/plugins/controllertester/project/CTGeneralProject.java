@@ -13,21 +13,21 @@ import com.codescroll.plugins.controllertester.util.PathProvider;
 
 import hudson.FilePath;
 
-public final class CTSingleProject extends CTProject {
+public final class CTGeneralProject extends CTProject {
 	
 	// 프로젝트 이름
-	private String projectName = PathProvider.BLANK;
+	private String projectName = PathProvider.NO_LENGTH;
 	
 	// 내보낸 프로젝트가 있는 경로
 	private FilePath projectPath;
 	
-	public CTSingleProject(FilePath projectPath) {
+	public CTGeneralProject(FilePath projectPath) {
 		this.projectPath = projectPath;
 	}
 	
 	public String getProjectName() {
 		if (projectName.isEmpty()) {
-			return parseJson();
+			projectName = parseJson();
 		}
 		return projectName;
 	}
@@ -35,7 +35,7 @@ public final class CTSingleProject extends CTProject {
 	// 내보낸 프로젝트가 있는 경로에서 json 파일 파싱
 	private String parseJson() {
 		
-		String parsedName = PathProvider.BLANK;
+		String parsedName = PathProvider.NO_LENGTH;
 		
 		// json parser
 		JSONParser parser = new JSONParser();

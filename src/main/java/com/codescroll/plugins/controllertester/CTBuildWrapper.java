@@ -40,19 +40,14 @@ public class CTBuildWrapper extends SimpleBuildWrapper {
 			String port) {
 		this.ctPath = ctPath;
 		this.licenseOption = licenseOption;
-		this.licenseFilePath = licenseFilePath;
-		this.serverOs = serverOs;
-		this.serverIp = serverIp;
-		this.port = port;
+		this.licenseFilePath = Util.fixNull(licenseFilePath);
+		this.serverOs = Util.fixNull(serverOs);
+		this.serverIp = Util.fixNull(serverIp);
+		this.port = Util.fixNull(port);
 
 		DescriptorImpl globalDescriptor = (DescriptorImpl) getDescriptor();
 
-		globalDescriptor.setGlobalCtPath(ctPath);
-		globalDescriptor.setGlobalLicenseOption(licenseOption);
-		globalDescriptor.setGlobalLicenseFilePath(licenseFilePath);
-		globalDescriptor.setGlobalServerOs(serverOs);
-		globalDescriptor.setGlobalServerIp(serverIp);
-		globalDescriptor.setGlobalPort(port);
+		globalDescriptor.setGlobal(ctPath, licenseOption, licenseFilePath, serverOs, serverIp, port);
 	}
 	
 	public String getCtPath() {
@@ -86,15 +81,9 @@ public class CTBuildWrapper extends SimpleBuildWrapper {
 		DescriptorImpl globalDescriptor = (DescriptorImpl) getDescriptor();
 		
 		context.env(KeyConstant.CTPATH, globalDescriptor.getGlobalCtPath());
-		
-		String fixedServerOs = Util.fixNull(globalDescriptor.getGlobalServerOs());
-		context.env(KeyConstant.SERVER_OS, fixedServerOs);
-		
-		String fixedServerIp = Util.fixNull(globalDescriptor.getGlobalServerIp());
-		context.env(KeyConstant.SERVER_IP, fixedServerIp);
-		
-		String fixedPort = Util.fixNull(globalDescriptor.getGlobalPort());
-		context.env(KeyConstant.PORT, fixedPort);
+		context.env(KeyConstant.SERVER_OS, globalDescriptor.getGlobalServerOs());
+		context.env(KeyConstant.SERVER_IP, globalDescriptor.getGlobalServerIp());
+		context.env(KeyConstant.PORT, globalDescriptor.getGlobalPort());
 		
 		String type;
 		
@@ -160,33 +149,12 @@ public class CTBuildWrapper extends SimpleBuildWrapper {
 			load();
 		}
 
-		// TODO 옵션에 따라서 다르게 저장
-		public void setGlobalCtPath(String globalCtPath) {
+		public void setGlobal(String globalCtPath, String globalLicenseOption, String globalLicenseFilePath, String globalServerOs, String globalServerIp, String globalPort) {
 			this.globalCtPath = globalCtPath;
-			save();
-		}
-
-		public void setGlobalLicenseOption(String globalLicenseOption) {
 			this.globalLicenseOption = globalLicenseOption;
-			save();
-		}
-		
-		public void setGlobalLicenseFilePath(String globalLicenseFilePath) {
 			this.globalLicenseFilePath = globalLicenseFilePath;
-			save();
-		}
-		
-		public void setGlobalServerOs(String globalServerOs) {
 			this.globalServerOs = globalServerOs;
-			save();
-		}
-
-		public void setGlobalServerIp(String globalServerIp) {
 			this.globalServerIp = globalServerIp;
-			save();
-		}
-
-		public void setGlobalPort(String globalPort) {
 			this.globalPort = globalPort;
 			save();
 		}

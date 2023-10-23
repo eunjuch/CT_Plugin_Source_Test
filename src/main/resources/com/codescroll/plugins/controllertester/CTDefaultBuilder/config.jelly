@@ -35,11 +35,13 @@
 		<f:checkbox></f:checkbox>
 	</f:entry>
     
-    <f:entry title="Report Format" field="reportFormat">
-		<f:radio name="reportFormat" title="HTML"
-			value="HTML" checked="${instance.reportFormat == 'HTML'}" />
-		<f:radio name="reportFormat" title="PDF"
-			value="PDF" checked="${instance.reportFormat == 'PDF'}" />
+    <f:entry title="Report Format">
+	    <f:entry title="HTML" field="htmlReport">
+			<f:checkbox></f:checkbox>
+		</f:entry>
+		<f:entry title="PDF" field="pdfReport">
+			<f:checkbox></f:checkbox>
+		</f:entry>
 	</f:entry>
 	
 	<f:advanced>
