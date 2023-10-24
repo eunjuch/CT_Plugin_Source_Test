@@ -29,9 +29,10 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 
+
 public class ProjectManager {
 
-	public record ResourceInfo(String resourcePath, FilePath targetPath, Map<String, String> keyValue) { }
+	private record ResourceInfo(String resourcePath, FilePath targetPath, Map<String, String> keyValue) { }
 	
 	private static final String GIT_EXE = "git.exe";
 	private static final String ORIGIN = "origin";
@@ -48,8 +49,7 @@ public class ProjectManager {
 		// ctdata, ctworkspace 폴더 삭제 (global, ini, report, 임시프로젝트 경로 포함)
 		
 		ArrayList<FilePath> pathToDelete = new ArrayList<>();
-		pathToDelete.add(pathProvider.getCtDataPath());
-		pathToDelete.add(pathProvider.getCtWorkspacePath());
+		pathToDelete.add(pathProvider.getCtPath());
 		
 		deleteDir(pathToDelete);
 		
@@ -58,6 +58,7 @@ public class ProjectManager {
 		pathToCreate.add(pathProvider.getIniPath());
 		pathToCreate.add(pathProvider.getReportPath());
 		pathToCreate.add(pathProvider.getTempProjectPath());
+		pathToCreate.add(pathProvider.getTempSourcesPath());
 		pathToCreate.add(pathProvider.getCtWorkspacePath());
 		
 		// ctdata, ctworkspace 생성
@@ -66,16 +67,43 @@ public class ProjectManager {
 	}
 	
 	// 로컬에서 임시 디렉터리로 재귀복사
-	public FilePath copyProject(String localProjectPath) throws IOException, InterruptedException {
+	public void copyProject(String localProjectPath) throws IOException, InterruptedException {
 		
 		FilePath resolvedLocalProjectPath = new FilePath(new File(localProjectPath));
 		FilePath tempPath = pathProvider.getTempProjectPath();
 		
 		resolvedLocalProjectPath.copyRecursiveTo(tempPath);
-		return resolvedLocalProjectPath;
 	}
 	
 	// git에서 임시 디렉터리로 클론
+	public void cloneSources(GitInfo gitInfo, Run<?, ?> run, EnvVars env, TaskListener listener) throws IOException, InterruptedException {
+		
+		StandardUsernameCredentials credential = CredentialsProvider.findCredentialById(
+	            gitInfo.credentialsId(),
+	            StandardUsernameCredentials.class,
+	            run,
+	            URIRequirementBuilder.fromUri(gitInfo.gitrepo()).build());
+		
+		if (credential == null || !GitClient.CREDENTIALS_MATCHER.matches(credential)) {
+			run.setResult(Result.FAILURE);
+			throw new AbortException("No Credential Specified");
+		}
+		
+		String revName = String.join(PathProvider.SEPARATOR, ORIGIN, gitInfo.branch());
+		
+		FilePath tempPath = pathProvider.getTempSourcesPath();
+		
+		Git git = Git.with(listener, env).in(tempPath).using(GIT_EXE);
+		GitClient client = git.getClient();
+		client.addCredentials(gitInfo.gitrepo(), credential);
+		client.setRemoteUrl(ORIGIN, gitInfo.gitrepo());
+		client.clone(gitInfo.gitrepo(), ORIGIN, false, null);
+		client.checkoutBranch(gitInfo.branch(), client.revParse(revName).getName());
+	}
+	
+	/**
+	 * 현재 사용되지 않는 코드
+	 */
 	public FilePath copyProject(GitInfo gitInfo, Run<?, ?> run, EnvVars env, TaskListener listener) throws IOException, InterruptedException {
 		
 		StandardUsernameCredentials credential = CredentialsProvider.findCredentialById(
@@ -107,7 +135,7 @@ public class ProjectManager {
 	}
 	
 	// import 이후에 사용할 소스코드 덮어쓰는 함수
-	public void updateSourceCode(String srcRootPath) throws IOException, InterruptedException {
+	public void updateSourceCode(String gitSourceRootPath) throws IOException, InterruptedException {
 		
 		/*
 		 * TODO 소스코드 덮어쓰는 로직 고민
@@ -125,7 +153,7 @@ public class ProjectManager {
 		// ******임시 코드*******
 		importedSourcePath = importedSourcePath.listDirectories().get(0);
 		
-		FilePath gitSourcePath = new FilePath(pathProvider.getWorkSpace(), srcRootPath);
+		FilePath gitSourcePath = new FilePath(pathProvider.getTempSourcesPath(), gitSourceRootPath);
 		if (gitSourcePath.exists()) {
 			gitSourcePath.copyRecursiveTo(importedSourcePath);
 		}
@@ -149,10 +177,11 @@ public class ProjectManager {
 	}
 	
 	// 디렉토리 구조 생성
+	// TODO 내부 수정, 메소드명 수정
 	public void makeDir(List<FilePath> dirPath) {
 		
 		try {
-			for (FilePath eachDirPath : dirPath) {				
+			for (FilePath eachDirPath : dirPath) {		
 				eachDirPath.mkdirs();
 			}
 		} catch (IOException e) {

@@ -13,9 +13,8 @@ public class CTGeneralCommand extends CTCommand {
 	private FilePath projectPath;
 	private String mappingFilePath;
 	
-	protected CTGeneralCommand(PathProvider pathProvider, FilePath projectPath, String mappingFilePath) {
+	protected CTGeneralCommand(PathProvider pathProvider, String mappingFilePath) {
 		this.pathProvider = pathProvider;
-		this.projectPath = projectPath;
 		this.mappingFilePath = mappingFilePath;
 	}
 	
@@ -31,7 +30,7 @@ public class CTGeneralCommand extends CTCommand {
 		return mappingFilePath;
 	}
 
-	private ArgumentListBuilder baseCommand() {
+	private ArgumentListBuilder basicCommand() {
 		ArgumentListBuilder cmd = new ArgumentListBuilder(CMD_CMD_EXE, CMD_C);
 		
 		cmd.add(CMD_CSC_EXE, CMD_G);
@@ -44,10 +43,10 @@ public class CTGeneralCommand extends CTCommand {
 	
 	@Override
 	public ArgumentListBuilder importCommand() {
-		ArgumentListBuilder cmd = baseCommand();
+		ArgumentListBuilder cmd = basicCommand();
 		cmd.add(CMD_IMPORT, CMD_O);
 		
-		String pathOption = String.join(PathProvider.NO_LENGTH, PathProvider.SINGLE_QUOTE, projectPath.getRemote(),
+		String pathOption = String.join(PathProvider.NO_LENGTH, PathProvider.SINGLE_QUOTE, pathProvider.getTempProjectPath().getRemote(),
 				PathProvider.SINGLE_QUOTE);
 		String finalOption = String.join(PathProvider.BLANK, CMD_PATH, pathOption, CMD_INCLUDE_SRC, CMD_INCLUDE_TCH);
 		/*
@@ -64,12 +63,13 @@ public class CTGeneralCommand extends CTCommand {
 
 	@Override
 	public ArgumentListBuilder executeCommand() throws IOException, InterruptedException {
-		ArgumentListBuilder cmd = baseCommand();
+		ArgumentListBuilder cmd = basicCommand();
 		
 		cmd.add(CMD_INI, CMD_O);
 		cmd.addQuoted(String.join(PathProvider.SEPARATOR, pathProvider.getIniPath().getRemote(), PathProvider.SAMPLE_CLI_INI));
 		
 		// TODO --result-path
+		// TODO self healing시 보고서 생성만 true로 해서 ini 재실행
 		
 		return cmd;
 	}

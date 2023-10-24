@@ -88,19 +88,19 @@ public class CTBuildWrapper extends SimpleBuildWrapper {
 		String type;
 		
 		// keyconstant - enum 하나로
-		if (licenseOption.equals(KeyConstant.FLOATING)) {
+		// TODO 수정
+		if (licenseOption.equals(License.FLOATING.name())) {
 			
-			// TODO ordinal 제외
-			type = String.valueOf(License.FLOATING.ordinal());
+			type = License.FLOATING.getLicenseNumber();
 			
-		} else if (licenseOption.equals(KeyConstant.NODELOCKED)) {
+		} else if (licenseOption.equals(License.NODELOCKED.name())) {
 			
 			copyLicense();
-			type = String.valueOf(License.NODELOCKED.ordinal());
+			type = License.NODELOCKED.getLicenseNumber();
 			
 		} else {
 			
-			type = String.valueOf(License.NONE.ordinal());
+			type = License.NONE.getLicenseNumber();
 			
 		}
 		

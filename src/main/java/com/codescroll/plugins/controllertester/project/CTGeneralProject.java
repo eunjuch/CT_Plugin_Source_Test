@@ -33,7 +33,7 @@ public final class CTGeneralProject extends CTProject {
 	}
 	
 	// 내보낸 프로젝트가 있는 경로에서 json 파일 파싱
-	private String parseJson() {
+	private String parseJson(){
 		
 		String parsedName = PathProvider.NO_LENGTH;
 		

@@ -39,35 +39,33 @@ import jenkins.tasks.SimpleBuildStep;
 
 public class CTDefaultBuilder extends Builder implements SimpleBuildStep {
 	
-	private static final String ARTIFACT_PATTERN = "ctdata/report/TestReport_*.*, ctdata/ini/*.ini";
+	private static final String ARTIFACT_PATTERN = "ct/report/TestReport_*.*, ct/ini/*.ini";
 	
-	private static final String LOCAL_REPO = "localRepo";
-	private static final String GIT_REPO = "gitRepo";
-	
-	private static final String HTML_KEY = "HTML";
-	private static final String PDF_KEY = "PDF";
-	
-	private static final String TRUE = "true";
-	private static final String FALSE = "false";
+	private static final String GENERAL_PROJECT = "generalProject";
+	private static final String TEAM_PROJECT = "teamProject";
 	
 	/**
 	 * Repository Option
 	 */
-	private String repoOption;
+	private String projectOption;
 	
 	/**
 	 * Project from Local
 	 */
 	private String localProjectPath;
 	
-	// Project from Git
-	private String gitProjectPath;
-	private String gitProjectBranch;
-	private String gitProjectRootPath;
-	private String credentialsId;
+	/**
+	 * Project from team
+	 */
+	// 팀 프로젝트 변수
 	
-	// Source Code Root
-	private String srcRootPath;
+	/**
+	 * Source Code from Git
+	 */
+	private String gitSourcePath;
+	private String gitSourceRootPath;
+	private String gitSourceBranch;
+	private String credentialsId;
 	
 	// RTV Test Execution
 	private boolean isRtvTest;
@@ -80,16 +78,15 @@ public class CTDefaultBuilder extends Builder implements SimpleBuildStep {
 	private String mappingFilePath;
 	
 	@DataBoundConstructor
-	public CTDefaultBuilder(String repoOption, String localProjectPath, String gitProjectPath, String gitProjectBranch,
-			String gitProjectRootPath, String credentialsId, String srcRootPath, boolean isRtvTest, boolean htmlReport, boolean pdfReport, 
+	public CTDefaultBuilder(String projectOption, String localProjectPath, String gitSourcePath, String gitSourceBranch,
+			String gitSourceRootPath, String credentialsId, boolean isRtvTest, boolean htmlReport, boolean pdfReport,
 			String mappingFilePath) {
-		this.repoOption = repoOption;
+		this.projectOption = projectOption;
 		this.localProjectPath = localProjectPath;
-		this.gitProjectPath = gitProjectPath;
-		this.gitProjectBranch = gitProjectBranch;
-		this.gitProjectRootPath = gitProjectRootPath;
+		this.gitSourcePath = gitSourcePath;
+		this.gitSourceBranch = gitSourceBranch;
+		this.gitSourceRootPath = gitSourceRootPath;
 		this.credentialsId = credentialsId;
-		this.srcRootPath = srcRootPath;
 		this.isRtvTest = isRtvTest;
 		this.htmlReport = htmlReport;
 		this.pdfReport = pdfReport;
@@ -97,7 +94,7 @@ public class CTDefaultBuilder extends Builder implements SimpleBuildStep {
 	}
 
 	public String getRepoOption() {
-		return repoOption;
+		return projectOption;
 	}
 
 	public String getLocalProjectPath() {
@@ -105,23 +102,19 @@ public class CTDefaultBuilder extends Builder implements SimpleBuildStep {
 	}
 
 	public String getGitProjectPath() {
-		return gitProjectPath;
+		return gitSourcePath;
 	}
 
 	public String getGitProjectBranch() {
-		return gitProjectBranch;
+		return gitSourceBranch;
 	}
 	
 	public String getGitProjectRootPath() {
-		return gitProjectRootPath;
+		return gitSourceRootPath;
 	}
 
 	public String getCredentialsId() {
 		return credentialsId;
-	}
-	
-	public String getSrcRootPath() {
-		return srcRootPath;
 	}
 	
 	public boolean getRtvTest() {
@@ -152,17 +145,21 @@ public class CTDefaultBuilder extends Builder implements SimpleBuildStep {
 		AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) run;
 		addArtifact(build.getProject());
 		
-		FilePath resolvedPath = workspace;
-		
 		// 내보낸 프로젝트 임시경로로 복사해오기
-		if (repoOption.equals(LOCAL_REPO)) {
-			resolvedPath = manager.copyProject(localProjectPath);
+		if (projectOption.equals(GENERAL_PROJECT)) {
+			manager.copyProject(localProjectPath);
 			
-		} else if (repoOption.equals(GIT_REPO)) {
-			GitInfo gitInfo = new GitInfo(gitProjectPath, gitProjectRootPath, gitProjectBranch, credentialsId);
-			resolvedPath = manager.copyProject(gitInfo, run, env, listener);
+		} else if (projectOption.equals(TEAM_PROJECT)) {
+			/*
+			 * 팀프로젝트 가져오기
+			 */
 		}
+		
+		// git에서 소스코드 가져오기
+		GitInfo gitInfo = new GitInfo(gitSourcePath, gitSourceRootPath, gitSourceBranch, credentialsId);
+		manager.cloneSources(gitInfo, run, env, listener);
 
+		// TODO Team일 경우 CTTeamProject 생성
 		CTGeneralProject singleProject = new CTGeneralProject(pathProvider.getTempProjectPath());
 		
 		// 환경변수에 대입
@@ -179,7 +176,8 @@ public class CTDefaultBuilder extends Builder implements SimpleBuildStep {
 		manager.writeInfo(env);
 		
 		// 커맨드 생성
-		CTGeneralCommand generalProjectCommand = new CTGeneralCommand(pathProvider, resolvedPath, mappingFilePath);
+		// TODO Team일 경우 CTTeamCommand 생성
+		CTGeneralCommand generalProjectCommand = new CTGeneralCommand(pathProvider, mappingFilePath);
 		
 		// import
 		if (startCommand(generalProjectCommand.importCommand(), env, launcher, listener) != Result.SUCCESS.ordinal) {
@@ -189,7 +187,7 @@ public class CTDefaultBuilder extends Builder implements SimpleBuildStep {
 		
 		// 최신 소스코드 반영
 		listener.getLogger().println("Update Source Code from SCM");
-		manager.updateSourceCode(srcRootPath);
+		manager.updateSourceCode(gitSourceRootPath);
 		
 		// execute
 		if (startCommand(generalProjectCommand.executeCommand(), env, launcher, listener) != Result.SUCCESS.ordinal) {
@@ -223,7 +221,7 @@ public class CTDefaultBuilder extends Builder implements SimpleBuildStep {
 	}
 	
 	// 아티팩트 추가 메소드
-	// 보고서, ini 파일 아티팩트로 추가하는 부분만 우선 구현
+	// 보고서, ini 파일 아티팩트로 추가
 	private void addArtifact(AbstractProject<?, ?> project) {
 		
 		// ArtifactArchiver 추가
@@ -258,7 +256,7 @@ public class CTDefaultBuilder extends Builder implements SimpleBuildStep {
 		@RequirePOST
 		public FormValidation doCheckLocalProjectPath(@QueryParameter String localProjectPath) throws IOException, ServletException {
 			if (localProjectPath.isEmpty()) {
-            	return FormValidation.error("Enter Your Local Project Path");
+            	return FormValidation.error("필수 입력란입니다.");
             }
             return FormValidation.ok();
         }
@@ -271,17 +269,25 @@ public class CTDefaultBuilder extends Builder implements SimpleBuildStep {
 		}
 		
 		@RequirePOST
-		public FormValidation doCheckGitProjectRootPath(@QueryParameter String gitProjectRootPath) throws IOException, ServletException {
-            if (gitProjectRootPath.isEmpty()) {
-            	return FormValidation.error("Enter Your Git Project Root Path");
+		public FormValidation doCheckGitSourcePath(@QueryParameter String gitSourcePath) throws IOException, ServletException {
+            if (gitSourcePath.isEmpty()) {
+            	return FormValidation.error("필수 입력란입니다.");
             }
             return FormValidation.ok();
         }
 		
 		@RequirePOST
-		public FormValidation doCheckSrcRootPath(@QueryParameter String srcRootPath) throws IOException, ServletException {
-            if (srcRootPath.isEmpty()) {
-            	return FormValidation.error("Enter Your Source Code Root Path from SCM");
+		public FormValidation doCheckGitSourceRootPath(@QueryParameter String gitSourceRootPath) throws IOException, ServletException {
+			if (gitSourceRootPath.isEmpty()) {
+				return FormValidation.error("필수 입력란입니다.");
+			}
+			return FormValidation.ok();
+		}
+		
+		@RequirePOST
+		public FormValidation doCheckGitSourceBranch(@QueryParameter String gitSourceBranch) throws IOException, ServletException {
+            if (gitSourceBranch.isEmpty()) {
+            	return FormValidation.error("필수 입력란입니다.");
             }
             return FormValidation.ok();
         }

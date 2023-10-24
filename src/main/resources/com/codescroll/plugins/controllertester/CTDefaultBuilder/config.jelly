@@ -1,41 +1,53 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
 	
-	<f:entry title="Project" field="repoOption">
-		<f:radio name="repoOption" title="Project from Local Repository" value="localRepo" checked="${instance.repoOption == 'localRepo'}">
+	<f:entry title="프로젝트 설정" field="projectOption">
+		<f:radio name="projectOption" title="CT 프로젝트" value="generalProject" checked="${instance.projectOption == 'generalProject'}">
 		    <f:nested>
-		    	<f:entry title="Project Path" field="localProjectPath">
+		    	<f:entry title="프로젝트 경로" field="localProjectPath">
 					<f:textbox></f:textbox>
 				</f:entry>
 		    </f:nested>
 	    </f:radio>
-		<f:radio name="repoOption" title="Project from Git Repository" value="gitRepo" checked="${instance.repoOption == 'gitRepo'}">
+		<f:radio name="projectOption" title="CT 팀 프로젝트" value="teamProject" checked="${instance.projectOption == 'teamProject'}">
 		    <f:nested>
-		    	<f:entry title="Git Project Path" field="gitProjectPath">
-					<f:textbox></f:textbox>
-				</f:entry>
-				<f:entry title="Branch" field="gitProjectBranch">
-					<f:textbox></f:textbox>
-				</f:entry>
-				<f:entry title="Project Root" field="gitProjectRootPath">
-					<f:textbox></f:textbox>
-				</f:entry>
-				<f:entry field="credentialsId" title="${%Credentials}">
-					<c:select includeUser="true"/>
-				</f:entry>
+		    	
 		    </f:nested>
 	    </f:radio>
 	</f:entry>
 	
-	<f:entry title="Source Code Root Path" field="srcRootPath">
-		<f:textbox></f:textbox>
-	</f:entry>
+	<f:entry title="소스코드 설정">
+    	<f:entry title="Git Repository 주소" field="gitSourcePath">
+			<f:textbox></f:textbox>
+		</f:entry>
+		<f:entry title="소스코드 루트 경로" field="gitSourceRootPath">
+			<f:textbox></f:textbox>
+		</f:entry>
+		<f:entry title="Branch" field="gitSourceBranch">
+			<f:textbox></f:textbox>
+		</f:entry>
+		<f:entry field="credentialsId" title="${%Credentials}">
+			<c:select includeUser="true"/>
+		</f:entry>
+    </f:entry>
 	
-	<f:entry title="Execute Test on Linux (RTV Test)" field="isRtvTest">
-		<f:checkbox></f:checkbox>
+	<f:entry title="테스트 설정">
+	    <f:optionalBlock title="Self Healing" field="selfHealing" inline="true">
+			<f:nested>
+				<f:entry title="Auto-commit" field="autoCommit">
+					<f:checkbox></f:checkbox>
+				</f:entry>
+				<f:entry title="재시도 횟수" field="retryCount">
+					<f:number min="1" max="100" default="1" style="width: 100px;"></f:number>
+				</f:entry>
+			</f:nested>
+		</f:optionalBlock>
+		<f:entry title="리눅스 환경에서 테스트 (RTV Test)" field="isRtvTest">
+			<f:checkbox></f:checkbox>
+		</f:entry>
 	</f:entry>
     
-    <f:entry title="Report Format">
+    <f:entry title="결과 보고서 설정">
 	    <f:entry title="HTML" field="htmlReport">
 			<f:checkbox></f:checkbox>
 		</f:entry>

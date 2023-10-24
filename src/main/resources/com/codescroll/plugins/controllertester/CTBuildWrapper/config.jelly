@@ -6,14 +6,14 @@
 	</f:entry>
 	
 	<f:entry title="${%license_properties_title}" field="licenseOption">
-		<f:radio name="licenseOption" title="Node-locked" value="nodelocked" checked="${descriptor.globalLicenseOption == 'nodelocked'}">
+		<f:radio name="licenseOption" title="Node-locked" value="NODELOCKED" checked="${descriptor.globalLicenseOption == 'NODELOCKED'}">
 		    <f:nested>
 		    	<f:entry title="License File Path" field="licenseFilePath">
 					<f:textbox default="${descriptor.globalLicenseFilePath}"></f:textbox>
 				</f:entry>
 		    </f:nested>
 	    </f:radio>
-		<f:radio name="licenseOption" title="Floating" value="floating" checked="${descriptor.globalLicenseOption == 'floating'}">
+		<f:radio name="licenseOption" title="Floating" value="FLOATING" checked="${descriptor.globalLicenseOption == 'FLOATING'}">
 		    <f:nested>
 		    	<f:entry title="${%server_os_title}" field="serverOs">
 					<f:radio name="serverOs" title="Window"

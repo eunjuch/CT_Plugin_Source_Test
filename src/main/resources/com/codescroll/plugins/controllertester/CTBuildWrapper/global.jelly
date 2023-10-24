@@ -8,14 +8,14 @@
 		</f:entry>
 		
 		<f:entry title="${%license_properties_title}" field="globalLicenseOption">
-			<f:radio name="globalLicenseOption" title="Node-locked" value="nodelocked" checked="${instance.globalLicenseOption == 'nodelocked'}">
+			<f:radio name="globalLicenseOption" title="Node-locked" value="NODELOCKED" checked="${instance.globalLicenseOption == 'NODELOCKED'}">
 			    <f:nested>
 			    	<f:entry title="License File Path" field="globalLicenseFilePath">
 						<f:textbox></f:textbox>
 					</f:entry>
 			    </f:nested>
 		    </f:radio>
-			<f:radio name="globalLicenseOption" title="Floating" value="floating" checked="${instance.globalLicenseOption == 'floating'}">
+			<f:radio name="globalLicenseOption" title="Floating" value="FLOATING" checked="${instance.globalLicenseOption == 'FLOATING'}">
 			    <f:nested>
 			    	<f:entry title="${%server_os_title}" field="globalServerOs">
 						<f:radio name="globalServerOs" title="Window"
