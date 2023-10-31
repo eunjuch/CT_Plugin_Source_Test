@@ -3,7 +3,7 @@ int func1(int a) {
 	return 0;
 }
 
-int function2(int a2, int b2) {
+int fu(int a2, int b2) {
 	a2 += func1(a2);
 	return 0;
 }
