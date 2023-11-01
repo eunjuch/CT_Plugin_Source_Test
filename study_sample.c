@@ -161,7 +161,7 @@ main( int argc, char* argv[] )
 	printf("=========== Output end ===================\n");
 }
 
-void api1(int a, char b, float c, unsigned long int d, long double e)
+void api1Hello(int a, char b, float c, unsigned long int d, long double e)
 {
 	long double	ret;
 	printf("=========== void api1(int a, char b, float c, unsigned long int d, long double e) Input ===================\n");
