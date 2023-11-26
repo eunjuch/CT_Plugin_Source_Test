@@ -85,7 +85,7 @@ void stubFunc0 (sst_extern_A) {
 /**/
 
 //int stubFunc1 () {
-//	int ret = 
+//	int ret = test_stub1();
 //	switch(ret){
 //	case 1:
 //		printf("Return value is 1\n");
