@@ -6,7 +6,7 @@ int func1(int a) {
 int fu(int a2, int b2) {
 	a2 += func1(a2);
 	return 0;
-}
+}ds
 
 int modition3(int a3, int b3, int c3) {
 	a3 += func1(a3);
