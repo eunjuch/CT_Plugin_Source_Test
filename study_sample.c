@@ -9,7 +9,7 @@
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	"study_sample.h"
-
+//test
 #ifdef __GNUC__ 
 struct { int test_yoon_a ; } ;
 #else
@@ -53,7 +53,7 @@ unsigned char testMe2(int n)
 	return n;
 }
 
-unsigned char timeOuthello()
+unsigned char timeOutFunc()
 {
 	unsigned char i = 0;
 
@@ -85,7 +85,7 @@ void stubFunc0 (sst_extern_A) {
 /**/
 
 //int stubFunc1 () {
-//	int ret =
+//	int ret = test_stub1();
 //	switch(ret){
 //	case 1:
 //		printf("Return value is 1\n");
@@ -103,7 +103,7 @@ void stubFunc0 (sst_extern_A) {
 //}
 
 int abc(int a){
-	if(abc_1(a) > 0 ){
+	if(modified(a) > 0 ){
 		printf("Return value is 1\n");
 		if(stubFunc1 () != 0){
 			printf("Return value is 3\n");
@@ -118,7 +118,7 @@ int abc(int a){
 	timeout();
 	return stubFunc2 ();
 }
-int abc_1(a){
+int modified(a){
 	return 1;
 }
 int pTest(int * a){
@@ -161,7 +161,7 @@ main( int argc, char* argv[] )
 	printf("=========== Output end ===================\n");
 }
 
-void api123(int a, char b, float c, unsigned long int d, long double e)
+void api1(int a, char b, float c, unsigned long int d, long double e)
 {
 	long double	ret;
 	printf("=========== void api1(int a, char b, float c, unsigned long int d, long double e) Input ===================\n");
